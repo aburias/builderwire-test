@@ -147,7 +147,10 @@ namespace BuilderWire.Console
 
             var valid = true;
 
-            System.Console.WriteLine("My Output \t->\t Text Output \t->\t Is Equals?");
+            //System.Console.WriteLine("My Output \t->\t Text Output \t->\t Is Equals?");
+            StringHelper.PrintLine();
+            StringHelper.PrintRow("Original Output", "Generated Output", "Is Equals?");
+            StringHelper.PrintLine();
 
             for (int i = 0; i < outputText.Count; i++)
             {
@@ -157,7 +160,8 @@ namespace BuilderWire.Console
                 else
                     System.Console.ForegroundColor = ConsoleColor.Red;
 
-                System.Console.WriteLine($"{cleanOutput[i]} \t->\t {outputText[i]} \t->\t {cleanOutput[i] == outputText[i]}");
+                //System.Console.WriteLine($"{cleanOutput[i]} \t->\t {outputText[i]} \t->\t {cleanOutput[i] == outputText[i]}");
+                StringHelper.PrintRow(outputText[i], cleanOutput[i], (cleanOutput[i] == outputText[i]).ToString());
 
                 if (cleanOutput[i] != outputText[i] && valid)
                     valid = false;
