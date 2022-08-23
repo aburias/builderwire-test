@@ -45,8 +45,8 @@ namespace BuilderWire.Console
             var wordsList = new List<Word>();
             foreach (var w in wordsListUnclean)
             {
-                if(replacements.Any(r => r.Key.Trim().ToLower() == w.Text.Trim().ToLower()))
-                    w.Text = replacements.FirstOrDefault().Value;
+                if (replacements.Any(r => r.Key.Trim().ToLower() == w.Text.Trim().ToLower()))
+                    w.Text = replacements.FirstOrDefault(r => r.Key.Trim().ToLower() == w.Text.Trim().ToLower()).Value;
 
                 wordsList.Add(w);
             }
@@ -72,24 +72,46 @@ namespace BuilderWire.Console
             var letterCount = 1;
             foreach (var word in wordsList)
             {
-                if(rowCount >= 27)
+                if (rowCount >= 27)
                 {
                     rowCount = 1;
                     letterCount++;
                 }
 
-                output.Add(new Output()
+                var instances = paragraphLlist.Where(p =>
+                    p.Text.ToLower().Contains($" {word.Text.Trim().ToLower()} ")
+                    || p.Text.ToLower().Contains($" {word.Text.Trim().ToLower()},")
+                    || p.Text.ToLower().StartsWith($"{word.Text.Trim().ToLower()} ")
+                    || p.Text.ToLower().EndsWith($" {word.Text.Trim().ToLower()}")
+                    );
+
+                var newOutput = new Output()
                 {
                     LetterIndex = RowNameHelper.GetRowName(rowCount, letterCount).ToLower(),
                     Word = word.Text.Trim().ToLower(),
-                    WordCount = word.WordCount,
-                    ParagraphLocations = paragraphLlist.Where(p => 
-                    p.Text.ToLower().Contains($" {word.Text.Trim().ToLower()} ") 
-                    || p.Text.ToLower().Contains($" {word.Text.Trim().ToLower()},")
-                    || p.Text.ToLower().StartsWith($"{word.Text.Trim().ToLower()} ") 
-                    || p.Text.ToLower().EndsWith($" {word.Text.Trim().ToLower()}")
-                    ).Select(p => p.PCount.ToString()).ToList()
-                });
+                    ParagraphLocations = instances.Select(p => p.PCount.ToString()).ToList()
+                };
+
+                foreach (var par in paragraphLlist)
+                {
+                    var paragraphWords = par.Text.ToLower().Split(' ').ToList();
+                    var totalInstances = paragraphWords.Count(p => p.ToLower().Trim() == word.Text.Trim().ToLower());
+                    if(totalInstances > 1)
+                    {
+                        for (int i = 1; i < totalInstances; i++)
+                        {
+                            newOutput.ParagraphLocations.Add(par.PCount.ToString());
+                        }
+                    }
+                }
+
+                newOutput.WordCount = newOutput.ParagraphLocations.Count;
+
+                var sortedLocations = newOutput.ParagraphLocations.OrderBy(o => Convert.ToInt32(o)).ToList();
+                newOutput.ParagraphLocations = sortedLocations;
+
+                output.Add(newOutput);
+
                 rowCount++;
             }
 
@@ -99,7 +121,7 @@ namespace BuilderWire.Console
 
             foreach (var co in finalOutputList)
             {
-                if(replacements.Any(r => co.Contains($" {r.Value} ")))
+                if (replacements.Any(r => co.Contains($" {r.Value} ")))
                 {
                     var rep = replacements.FirstOrDefault(r => co.Contains($" {r.Value} "));
                     var newCo = co.Replace(rep.Value, rep.Key);
@@ -113,13 +135,46 @@ namespace BuilderWire.Console
             var outputText = InputHelper.ReadInputLines(outputPath).GetAwaiter().GetResult().Select(r => r.Trim()).ToList();
 
             // Validate Output
-            if(cleanOutput.Count != outputText.Count)
+            if (cleanOutput.Count != outputText.Count)
                 throw new Exception("Invalid output!");
+
+            var valid = true;
+
+            System.Console.WriteLine("My Output \t->\t Text Output \t->\t Is Equals?");
 
             for (int i = 0; i < outputText.Count; i++)
             {
-                if(cleanOutput[i] != outputText[i])
-                    throw new Exception("Invalid output!");
+                var needChecked = cleanOutput[i] == outputText[i] ? "" : "Needs Validation!";
+                if(string.IsNullOrEmpty(needChecked))
+                    System.Console.ForegroundColor = ConsoleColor.White;
+                else
+                    System.Console.ForegroundColor = ConsoleColor.Red;
+
+                System.Console.WriteLine($"{cleanOutput[i]} \t->\t {outputText[i]} \t->\t {cleanOutput[i] == outputText[i]}");
+
+                if (cleanOutput[i] != outputText[i] && valid)
+                    valid = false;
+            }
+
+
+            if (!valid)
+            {
+                System.Console.ForegroundColor = ConsoleColor.Red;
+                throw new Exception("Invalid output!");
+            }
+            else
+            {
+                var newOutputPath = $"{currentOutputDirectory}\\Output-{DateTime.Now:MMddyyyyhhmmss}.txt";
+                if(File.Exists(newOutputPath))
+                    File.Delete(newOutputPath);
+                else
+                    File.WriteAllLines(newOutputPath, outputText);
+
+                System.Console.ForegroundColor = ConsoleColor.Green;
+                System.Console.WriteLine("\r\r");
+                System.Console.WriteLine("--------------------------");
+                System.Console.WriteLine("SUCCESSFULLY VALIDATED OUTPUT!");
+                System.Console.WriteLine("--------------------------");
             }
         }
     }

@@ -10,6 +10,5 @@ namespace BuilderWire.Models.Output
         public string Word { get; set; }
         public int WordCount { get; set; }
         public List<string> ParagraphLocations { get; set; }
-        public List<string> Multiple { get; set; }
     }
 }
