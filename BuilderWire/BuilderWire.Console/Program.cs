@@ -13,6 +13,7 @@ namespace BuilderWire.Console
     {
         static void Main(string[] args)
         {
+            // Declare Global variables...
             var currentInputDirectory = "Input";
             var currentOutputDirectory = "Output";
             var articleFileName = "Article.txt";
@@ -22,9 +23,11 @@ namespace BuilderWire.Console
             var wordsPath = $"{currentInputDirectory}\\{wordsFileName}";
             var outputPath = $"{currentOutputDirectory}\\{outputFileName}";
 
+            // Validate if all files are existing.
             if (!ValidationHelper.IsValidFile(articlePath) || !ValidationHelper.IsValidFile(wordsPath) || !ValidationHelper.IsValidFile(outputPath))
                 throw new FileNotFoundException("Invalid Input Files!");
 
+            // Read article content and convert to object.
             var article = InputHelper.ReadInputContent(articlePath).GetAwaiter().GetResult();
             var articleObj = new Article()
             {
@@ -39,9 +42,11 @@ namespace BuilderWire.Console
                 new KeyValuePair<string, string>("e.g.", "eg"),
             };
 
+            // Retrieve words...
             var words = InputHelper.ReadInputLines(wordsPath).GetAwaiter().GetResult();
             var wordsListUnclean = words.Select(w => new Word() { Text = w, WordCount = articleWords.Count(wr => wr.ToLower().Trim() == w.ToLower().Trim()) }).ToList();
 
+            // Cleanup wordslist...
             var wordsList = new List<Word>();
             foreach (var w in wordsListUnclean)
             {
@@ -51,9 +56,10 @@ namespace BuilderWire.Console
                 wordsList.Add(w);
             }
 
-            //wordsList.ForEach(w => replacements.Any(r => r.Key.Trim().ToLower() == w.Text.Trim().ToLower() ? w.Text = replacements.FirstOrDefault().Value : w.Text = w.Text));
+            // Sanitize and Clean article contents.
             var cleanArticle = StringHelper.SanitizeString(article, replacements);
 
+            // Extract and clean paragraph into list.
             var paragraphs = StringHelper.ExtractParagraphs(cleanArticle);
             var paragraphCount = 1;
             var paragraphLlist = new List<Paragraph>();
@@ -67,6 +73,7 @@ namespace BuilderWire.Console
                 paragraphCount++;
             }
 
+            // Generate and calculate output.
             var output = new List<Output>();
             var rowCount = 1;
             var letterCount = 1;
