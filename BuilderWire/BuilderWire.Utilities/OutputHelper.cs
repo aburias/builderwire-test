@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -103,7 +104,9 @@ namespace BuilderWire.Utilities
             }
             else
             {
+                // Please check where the output files are...
                 var newOutputPath = $"{currentOutputDirectory}\\Output-{DateTime.Now:MMddyyyyhhmmss}.txt";
+
                 if (File.Exists(newOutputPath))
                     File.Delete(newOutputPath);
                 else
@@ -114,6 +117,12 @@ namespace BuilderWire.Utilities
                 System.Console.WriteLine("--------------------------");
                 System.Console.WriteLine("SUCCESSFULLY VALIDATED OUTPUT!");
                 System.Console.WriteLine("--------------------------");
+
+                System.Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("OPENING OUTPUT FILES...");
+
+                Process.Start("notepad.exe", newOutputPath);
+                Process.Start("notepad.exe", $"{currentOutputDirectory}\\Output.txt");
             }
         }
     }
