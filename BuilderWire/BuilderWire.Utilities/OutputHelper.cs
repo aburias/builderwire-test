@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using BuilderWire.Models;
@@ -67,6 +68,53 @@ namespace BuilderWire.Utilities
             }
 
             return output;
+        }
+
+        public static void ValidateAndFinalizeResults(List<string> finalOutputList, List<string> outputText,
+            string currentOutputDirectory)
+        {
+            // Validate Output
+            if (finalOutputList.Count != outputText.Count)
+                throw new Exception("Invalid output!");
+
+            var valid = true;
+
+            //System.Console.WriteLine("My Output \t->\t Text Output \t->\t Is Equals?");
+            StringHelper.PrintLine();
+            StringHelper.PrintRow("Original Output", "Generated Output", "Is Equals?");
+            StringHelper.PrintLine();
+
+            for (var i = 0; i < outputText.Count; i++)
+            {
+                var needChecked = finalOutputList[i] == outputText[i] ? "" : "Needs Validation!";
+
+                System.Console.ForegroundColor = string.IsNullOrEmpty(needChecked) ? ConsoleColor.White : ConsoleColor.Red;
+
+                StringHelper.PrintRow(outputText[i], finalOutputList[i], (finalOutputList[i] == outputText[i]).ToString());
+
+                if (finalOutputList[i] != outputText[i] && valid)
+                    valid = false;
+            }
+
+            if (!valid)
+            {
+                System.Console.ForegroundColor = ConsoleColor.Red;
+                throw new Exception("Invalid output!");
+            }
+            else
+            {
+                var newOutputPath = $"{currentOutputDirectory}\\Output-{DateTime.Now:MMddyyyyhhmmss}.txt";
+                if (File.Exists(newOutputPath))
+                    File.Delete(newOutputPath);
+                else
+                    File.WriteAllLines(newOutputPath, outputText);
+
+                System.Console.ForegroundColor = ConsoleColor.Green;
+                System.Console.WriteLine("\r\r");
+                System.Console.WriteLine("--------------------------");
+                System.Console.WriteLine("SUCCESSFULLY VALIDATED OUTPUT!");
+                System.Console.WriteLine("--------------------------");
+            }
         }
     }
 }
