@@ -9,14 +9,10 @@ namespace BuilderWire.Utilities
     public static class StringHelper
     {
         static int tableWidth = 110;
-        public static List<string> ExtractFinalOutput(List<Output> output)
-        {
-            return output.Select(r => $"{r.LetterIndex}. {r.Word} {{{r.WordCount}:{r.ParagraphLocations.Aggregate((first, next) => $"{first},{next}")}}}").ToList();
-        }
 
         public static List<string> ExtractParagraphs(string cleanArticle)
         {
-            return cleanArticle.Replace(". ", "|").Split('|').Select(p => $"{p.TrimEnd('.')}").ToList();
+            return cleanArticle.Replace(". ", "|").Split('|').Select(p => $"{p}").ToList();
         }
 
         public static string SanitizeString(string str, List<KeyValuePair<string, string>> rep)
