@@ -91,6 +91,13 @@ namespace BuildWire.Tests
             var finalOutputList = OutputHelper.ExtractFinalOutput(output);
 
             // Assert
+            Assert.IsNotNull(outputText);
+            Assert.IsTrue(outputText.Any());
+
+            Assert.IsNotNull(finalOutputList);
+            Assert.IsTrue(finalOutputList.Any());
+
+            Assert.IsTrue(outputText.Count() == finalOutputList.Count());
             Assert.IsTrue(finalOutputList.SequenceEqual(outputText));
         }
     }
